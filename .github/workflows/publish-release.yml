@@ -65,6 +65,8 @@ jobs:
 
     - name: Upload Windows Release
       uses: actions/upload-release-asset@v1
+      permissions:
+        contents: write
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -75,6 +77,8 @@ jobs:
 
     - name: Upload Linux Release
       uses: actions/upload-release-asset@v1
+      permissions:
+        contents: write
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -85,6 +89,8 @@ jobs:
 
     - name: Upload MacOS Release
       uses: actions/upload-release-asset@v1
+      permissions:
+        contents: write
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
