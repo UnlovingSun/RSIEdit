@@ -284,11 +284,11 @@ public class MainWindowViewModel : ViewModelBase
 
         var rsis = new List<(Rsi Rsi, string Path)>();
 
-        await LoadRSIs(directory, rsis);
+        await LoadRSIs(directory, rsis, directory);
 
         foreach (var fn in Directory.GetDirectories(directory, "*", SearchOption.AllDirectories))
         {
-            await LoadRSIs(fn, rsis);
+            await LoadRSIs(fn, rsis, directory);
         }
 
         if (rsis.Count == 0) return;
@@ -419,11 +419,17 @@ public class MainWindowViewModel : ViewModelBase
         
     #endregion
         
-    private async Task LoadRSIs(string directory, List<(Rsi, string)> rsis)
+    private async Task LoadRSIs(string directory, List<(Rsi, string)> rsis, string rootDirectory)
     {
-        foreach (var (dmiPath, rsiPath) in GetDMIFiles(directory))
+        foreach (var (dmiPath, rsiPath) in GetDMIFiles(directory, rootDirectory))
         {
-            var rsi = await LoadDmi(dmiPath);
+            Rsi? rsi = null;
+            try {
+                rsi = await LoadDmi(dmiPath);
+            }
+            catch(Exception exception) {
+                Logger.Sink?.Log(LogEventLevel.Error, "MAIN", null, $"DMI path: {dmiPath}\t Exception message: {exception.Message}");
+            }
 
             if (rsi == null) continue;
 
@@ -431,13 +437,14 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private IEnumerable<(string DMI, string RSI)> GetDMIFiles(string directory)
+    private IEnumerable<(string DMI, string RSI)> GetDMIFiles(string directory, string rootDirectory)
     {
         foreach (var fn in Directory.GetFiles(directory))
         {
             if (Path.GetExtension(fn) != ".dmi") continue;
                 
             var targetPath = Path.ChangeExtension(fn, "rsi");
+            targetPath = targetPath.Replace(rootDirectory, rootDirectory + "_rsi");
 
             if (Directory.Exists(targetPath)) continue;
 
